@@ -14,7 +14,6 @@
 
 <main class="services-main">
 	<div class="services-left">
-		<p class="services-desc">Explore the essential features that make managing your digital money simple, secure, and convenient.</p>
 		<ul class="services-list">
 			<li><strong>Balance Management:</strong> View and track your wallet balance in real time.</li>
 			<li><strong>Fund Transfer:</strong> Send and receive money instantly to other users.</li>

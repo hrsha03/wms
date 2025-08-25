@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>WalletSys | Home</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/home.css">
   <link rel="stylesheet" href="assets/navbar.css">
   <script src="assets/scripts.js" defer></script>
 </head>
