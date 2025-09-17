@@ -21,7 +21,7 @@
       <div><label>Email:</label> <span id="accEmail">...</span></div>
       <div><label>Username:</label> <span id="accUsername">...</span></div>
       <div><label>Member Since:</label> <span id="accMemberSince">...</span></div>
-      <div><label>Status:</label> <span id="accStatus">Active</span></div>
+      <div><label>Status:</label> <span id="accStatus">...</span></div>
     </div>
     <div class="account-actions">
   <button class="account-btn">Edit Profile</button>
@@ -57,6 +57,7 @@ async function fetchAccountDetails() {
     document.getElementById('accEmail').textContent = user.email;
     document.getElementById('accUsername').textContent = user.username;
     document.getElementById('accMemberSince').textContent = new Date(user.member_since).toLocaleDateString();
+    document.getElementById('accStatus').textContent = 'Active';
   } catch (e) {
     document.getElementById('accountDetails').innerHTML = '<span style="color:#b00">Could not load account details. Please login again.</span>';
   }
