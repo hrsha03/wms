@@ -6,10 +6,23 @@ function closeModal(id) {
   document.getElementById(id).classList.add('hidden');
 }
 
+
+
+// JWT helpers and logout (moved here for global access)
+function setToken(token) {
+  localStorage.setItem('jwt', token);
+}
+function getToken() {
+  return localStorage.getItem('jwt');
+}
+function removeToken() {
+  localStorage.removeItem('jwt');
+}
+function updateAuthUI() {
+  // Reload to update navbar and main content
+  location.reload();
+}
 function logout() {
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.innerHTML = `<input type="hidden" name="action" value="logout" />`;
-  document.body.appendChild(form);
-  form.submit();
+  removeToken();
+  updateAuthUI();
 }
