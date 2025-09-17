@@ -50,7 +50,7 @@ function renderHomeAuthSection() {
   if (token) {
     const payload = parseJwt(token);
     if (payload && payload.username) {
-      el.innerHTML = `<p class='welcome'>Hi, ${payload.username}!</p><p class='question'>What would you like to do today?</p>`;
+      el.innerHTML = `<p class='welcome'>Hi, ${payload.name}!</p><p class='question'>What would you like to do today?</p>`;
       return;
     }
   }

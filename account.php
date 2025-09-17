@@ -16,16 +16,17 @@
   <div class="account-left">
     <p class="account-title">My Account</p>
     <p class="account-desc">View and manage your profile, security, and preferences.</p>
-    <div class="account-details">
-      <div><label>Name:</label> <span>John Doe</span></div>
-      <div><label>Email:</label> <span>john.doe@email.com</span></div>
-      <div><label>Member Since:</label> <span>Jan 2024</span></div>
-      <div><label>Status:</label> <span>Active</span></div>
+    <div class="account-details" id="accountDetails">
+      <div><label>Name:</label> <span id="accName">...</span></div>
+      <div><label>Email:</label> <span id="accEmail">...</span></div>
+      <div><label>Username:</label> <span id="accUsername">...</span></div>
+      <div><label>Member Since:</label> <span id="accMemberSince">...</span></div>
+      <div><label>Status:</label> <span id="accStatus">Active</span></div>
     </div>
     <div class="account-actions">
-      <button class="account-btn">Edit Profile</button>
-      <button class="account-btn">Change Password</button>
-      <button class="account-btn">Logout</button>
+  <button class="account-btn">Edit Profile</button>
+  <button class="account-btn">Change Password</button>
+  <button class="account-btn" onclick="logout()">Logout</button>
     </div>
   </div>
   <div class="account-right account-circles-row">
@@ -41,5 +42,26 @@
   </div>
 </main>
 
+<script>
+async function fetchAccountDetails() {
+  const token = localStorage.getItem('jwt');
+  if (!token) return;
+  try {
+    const res = await fetch('http://localhost:4000/api/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error('Not authorized');
+    const data = await res.json();
+    const user = data.user;
+    document.getElementById('accName').textContent = user.name;
+    document.getElementById('accEmail').textContent = user.email;
+    document.getElementById('accUsername').textContent = user.username;
+    document.getElementById('accMemberSince').textContent = new Date(user.member_since).toLocaleDateString();
+  } catch (e) {
+    document.getElementById('accountDetails').innerHTML = '<span style="color:#b00">Could not load account details. Please login again.</span>';
+  }
+}
+document.addEventListener('DOMContentLoaded', fetchAccountDetails);
+</script>
 </body>
 </html>

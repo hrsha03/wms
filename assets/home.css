@@ -32,15 +32,12 @@ body {
 }
 
 
-.question, .cta-text, .user-span {
+.question, .cta-text {
   font-size: 1.1em;
   color: #ccc;
   font-style: italic;
 }
 
-.user-span {
-    margin-top: 1rem;
-}
 
 .cta-buttons {
   margin-top: 20px;

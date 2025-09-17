@@ -54,3 +54,10 @@
 .auth-section button:hover {
   background-color: #333;
 }
+
+.user-span {
+  font-size: 1.1em;
+  color: #ccc;
+  font-style: italic;
+  margin-top: 1rem;
+}
