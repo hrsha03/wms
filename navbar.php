@@ -1,5 +1,5 @@
 <nav class="navbar">
-  <div class="logo">WalletSys</div>
+  <div class="logo">wms.</div>
   <ul class="nav-links">
     <li><a href="index.php">Home</a></li>
     <li><a href="wallet.php">Wallet</a></li>

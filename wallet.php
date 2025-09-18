@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WalletSys | Wallet</title>
+  <title>wms. | Wallet</title>
   <link rel="stylesheet" href="assets/navbar.css">
   <link rel="stylesheet" href="assets/wallet.css">
   <script src="assets/scripts.js" defer></script>
@@ -14,7 +14,7 @@
 
 <main class="wallet-main">
   <div class="wallet-left">
-    <p class="wallet-title">My Wallet</p>
+    <p class="wallet-title">My "wms"</p>
     <p class="wallet-desc">Access all your wallet features and manage your digital funds securely.</p>
     <div class="wallet-balance">Balance: 2,500 Credits</div>
     <div class="wallet-actions">

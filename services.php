@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>WalletSys | Services</title>
+	<title>wms. | Services</title>
 	<link rel="stylesheet" href="assets/services.css">
 	<link rel="stylesheet" href="assets/navbar.css">
     <script src="assets/scripts.js" defer></script>

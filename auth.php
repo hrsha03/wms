@@ -1,5 +1,3 @@
-
-
 <!-- LOGIN MODAL -->
 <div id="loginModal" class="modal hidden">
   <form id="loginForm">
