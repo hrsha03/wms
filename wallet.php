@@ -8,6 +8,11 @@
   <link rel="stylesheet" href="assets/wallet.css">
   <link rel="stylesheet" href="assets/home.css">
   <script src="assets/scripts.js" defer></script>
+  <script src="assets/creating-wallet.js" defer></script>
+  <script src="assets/send-money.js" defer></script>
+  <script src="assets/transaction-history.js" defer></script>
+  <script src="assets/vouchers.js" defer></script>
+  <script src="assets/wallet-actions.js" defer></script>
 </head>
 <body>
 
@@ -17,7 +22,7 @@
   <div class="wallet-left">
     <p class="wallet-title">My "wms"</p>
     <p class="wallet-desc">Access all your wallet features and manage your digital funds securely.</p>
-    <div class="wallet-balance" id="walletBalance">Balance: 2,500 Credits</div>
+    <div class="wallet-balance" id="walletBalance">Balance: 500 Credits</div>
     <div class="wallet-actions">
       <button class="wallet-btn">Add Funds</button>
       <button class="wallet-btn" onclick="openModal('sendMoneyModal')">Send Money</button>
@@ -128,7 +133,6 @@
   </form>
 </div>
 
-
 <script>
 function parseJwt (token) {
   try {
@@ -177,254 +181,10 @@ async function loadWallet() {
     balanceEl.innerHTML = `Error connecting to server`;
   }
 }
-
-document.getElementById('createWalletForm').onsubmit = async function(e) {
-  e.preventDefault();
-  const token = await getAuthToken();
-  if (!token) {
-    document.getElementById('createWalletError').textContent = 'You must be logged in to create a wallet.';
-    return;
-  }
-  const form = e.target;
-  const walletId = form.walletId.value.trim();
-  const pin = form.pin.value.trim();
-  if (!/^\d{4}$/.test(pin)) {
-    document.getElementById('createWalletError').textContent = 'PIN must be 4 digits.';
-    return;
-  }
-  try {
-    const res = await fetch('http://localhost:4000/api/auth/wallet', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ walletId, pin })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      document.getElementById('createWalletError').textContent = data.message || 'Failed to create wallet';
-      return;
-    }
-    closeModal('createWalletModal');
-    await loadWallet();
-    alert('Wallet created! You received 500 Credits.');
-  } catch (err) {
-    document.getElementById('createWalletError').textContent = 'Server error';
-  }
-};
-
-// Send Money Handler
-let sendMoneyDetails = {};
-document.getElementById('sendMoneyForm').onsubmit = function(e) {
-  e.preventDefault();
-  const form = e.target;
-  sendMoneyDetails.recipientId = form.recipientId.value.trim();
-  sendMoneyDetails.amount = parseInt(form.amount.value.trim(), 10);
-  closeModal('sendMoneyModal');
-  openModal('verifyPinModal');
-};
-
-document.getElementById('verifyPinForm').onsubmit = async function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const pin = form.pin.value.trim();
-  try {
-    const token = await getAuthToken();
-    const res = await fetch('http://localhost:4000/api/auth/wallet/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ ...sendMoneyDetails, pin })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      document.getElementById('verifyPinError').textContent = data.message || 'Transaction failed';
-      return;
-    }
-    closeModal('verifyPinModal');
-    alert('Transaction successful!');
-    await loadWallet();
-  } catch (err) {
-    document.getElementById('verifyPinError').textContent = 'Server error';
-  }
-};
-
-// Load Transaction History
-async function loadTransactionHistory() {
-  const token = await getAuthToken();
-  try {
-    const res = await fetch('http://localhost:4000/api/auth/wallet/transactions', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      alert(data.message || 'Failed to load transactions');
-      return;
-    }
-    const tbody = document.querySelector('#transactionTable tbody');
-    tbody.innerHTML = '';
-    data.transactions.forEach(tranx => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${tranx.verb}</td>
-        <td>${tranx.wms_id}</td>
-        <td>${tranx.amount}</td>
-        <td>${new Date(tranx.timestamp).toLocaleString()}</td>
-      `;
-      tbody.appendChild(row);
-    });
-    openModal('transactionHistoryModal');
-  } catch (err) {
-    alert('Server error');
-  }
-}
-
-// Adding detailed logs and ensuring proper handling of the API response in loadVouchers
-async function loadVouchers() {
-  const token = await getAuthToken();
-  try {
-    const res = await fetch('http://localhost:4000/api/auth/wallet/vouchers', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.error('API returned an error:', data.message || res.statusText);
-      return;
-    }
-
-    // Ensure the data structure is as expected
-    if (!data.vouchers || !Array.isArray(data.vouchers)) {
-      console.error('Unexpected data format:', data);
-      return;
-    }
-
-    // Target the renamed vouchers table body
-    const tbody = document.querySelector('#vouchersTable tbody');
-    if (!tbody) {
-      console.error('Vouchers table body not found');
-      return;
-    }
-
-    tbody.innerHTML = '';
-    data.vouchers.forEach(voucher => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${voucher.voucher_id}</td>
-        <td>${voucher.amount}</td>
-        <td>${voucher.status}</td>
-      `;
-      tbody.appendChild(row);
-    });
-
-    openModal('vouchersModal');
-  } catch (err) {
-    console.error('Error in loadVouchers function:', err);
-    alert('Server error');
-  }
-}
-
-// Ensure the modal opens and triggers the API call
-const transactionHistoryButton = document.querySelector('.wallet-btn[onclick="openModal(\'transactionHistoryModal\')"]');
-if (transactionHistoryButton) {
-  transactionHistoryButton.addEventListener('click', loadTransactionHistory);
-}
-
-const transactionCircle = document.querySelector('.wallet-circle[onclick="openModal(\'transactionHistoryModal\')"]');
-if (transactionCircle) {
-  transactionCircle.addEventListener('click', (e) => {
-    loadTransactionHistory();
-  });
-}
-
-// Update the `onclick` attribute of the wallet-circle div for vouchers
-const voucherCircle = document.querySelector('.wallet-circle[onclick="openModal(\'vouchersModal\')"]');
-if (voucherCircle) {
-  voucherCircle.addEventListener('click', (e) => {
-    loadVouchers();
-  });
-}
-
-// Deposit Voucher Handler
-const depositVoucherForm = document.getElementById('depositVoucherForm');
-depositVoucherForm.onsubmit = async function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const voucherId = form.voucherId.value.trim();
-  await depositVoucher(voucherId);
-  closeModal('depositVoucherModal');
-};
-
-// Define the withdrawVoucher function to handle withdrawals
-async function withdrawVoucher(amount) {
-  console.log('withdrawVoucher function triggered with amount:', amount);
-  const token = await getAuthToken();
-  if (!token) {
-    alert('You must be logged in to withdraw funds.');
-    return;
-  }
-  try {
-    const res = await fetch('http://localhost:4000/api/auth/wallet/withdraw', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ amount })
-    });
-    const data = await res.json();
-    console.log('API response for withdraw:', data);
-
-    if (!res.ok) {
-      alert(data.message || 'Failed to withdraw funds');
-      return;
-    }
-
-    alert(`Withdrawal successful! Voucher ID: ${data.voucherId}`);
-    await loadWallet();
-  } catch (err) {
-    console.error('Error in withdrawVoucher function:', err);
-    alert('Server error');
-  }
-}
-
-// Withdraw Voucher Handler
-const withdrawVoucherForm = document.getElementById('withdrawVoucherForm');
-withdrawVoucherForm.onsubmit = async function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const amount = parseInt(form.amount.value.trim(), 10);
-  await withdrawVoucher(amount);
-  closeModal('withdrawVoucherModal');
-};
-
-// Define the depositVoucher function to handle deposits
-async function depositVoucher(voucherId) {
-  console.log('depositVoucher function triggered with voucherId:', voucherId);
-  const token = await getAuthToken();
-  if (!token) {
-    alert('You must be logged in to deposit funds.');
-    return;
-  }
-  try {
-    const res = await fetch('http://localhost:4000/api/auth/wallet/deposit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ voucherId })
-    });
-    const data = await res.json();
-    console.log('API response for deposit:', data);
-
-    if (!res.ok) {
-      alert(data.message || 'Failed to deposit funds');
-      return;
-    }
-
-    alert(`Deposit successful! Amount: ${data.amount}`);
-    await loadWallet();
-  } catch (err) {
-    console.error('Error in depositVoucher function:', err);
-    alert('Server error');
-  }
-}
-
 document.addEventListener('DOMContentLoaded', loadWallet);
 
 </script>
+
 
 </body>
 </html>
