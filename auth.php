@@ -25,6 +25,8 @@
   </form>
 </div>
 
+<link rel="stylesheet" href="assets/wallet.css">
+
 <script>
 // Helper to hash password with SHA-256
 async function hashPassword(password) {
@@ -100,7 +102,7 @@ document.getElementById('signupForm').onsubmit = async function(e) {
   const data = await res.json();
   if (res.ok) {
     closeModal('signupModal');
-    alert('Signup successful! Please login.');
+    showCustomAlert('Signup successful! Please login.');
   } else {
     document.getElementById('signupError').textContent = data.message || 'Signup failed';
   }

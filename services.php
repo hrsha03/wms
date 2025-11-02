@@ -6,6 +6,8 @@
 	<title>wms. | Services</title>
 	<link rel="stylesheet" href="assets/services.css">
 	<link rel="stylesheet" href="assets/navbar.css">
+	<link rel="stylesheet" href="assets/modal.css">
+	
     <script src="assets/scripts.js" defer></script>
 </head>
 <body>
@@ -38,6 +40,7 @@
 				</div>
 			</div>
 </main>
+<?php include('auth.php'); ?>
 
 </body>
 </html>

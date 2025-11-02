@@ -1,5 +1,10 @@
 function openModal(id) {
-  document.getElementById(id).classList.remove('hidden');
+  const modal = document.getElementById(id);
+  if (!modal) {
+    console.error(`Modal with id '${id}' not found.`);
+    return;
+  }
+  modal.classList.remove('hidden');
 }
 
 function closeModal(id) {

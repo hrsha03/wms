@@ -6,6 +6,7 @@
   <title>wms. | Account</title>
   <link rel="stylesheet" href="assets/navbar.css">
   <link rel="stylesheet" href="assets/account.css">
+  <link rel="stylesheet" href="assets/home.css">
   <script src="assets/scripts.js" defer></script>
 </head>
 <body>
@@ -64,5 +65,7 @@ async function fetchAccountDetails() {
 }
 document.addEventListener('DOMContentLoaded', fetchAccountDetails);
 </script>
+<?php include('auth.php'); ?>
+
 </body>
 </html>

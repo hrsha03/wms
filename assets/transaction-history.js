@@ -8,7 +8,7 @@ async function loadTransactionHistory() {
     });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.message || 'Failed to load transactions');
+      showCustomAlert(data.message || 'Failed to load transactions');
       return;
     }
     const tbody = document.querySelector('#transactionTable tbody');
@@ -25,7 +25,7 @@ async function loadTransactionHistory() {
     });
     openModal('transactionHistoryModal');
   } catch (err) {
-    alert('Server error');
+    showCustomAlert('Server error');
   }
 }
 

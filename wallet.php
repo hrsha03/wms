@@ -133,6 +133,17 @@
   </form>
 </div>
 
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeCustomAlert()">&times;</span>
+    <p id="customAlertMessage"></p>
+    <button class="modal-btn" onclick="closeCustomAlert()">OK</button>
+  </div>
+</div>
+
+<?php include('auth.php'); ?>
+
 <script>
 function parseJwt (token) {
   try {
@@ -183,6 +194,17 @@ async function loadWallet() {
 }
 document.addEventListener('DOMContentLoaded', loadWallet);
 
+function showCustomAlert(message) {
+  const modal = document.getElementById('customAlertModal');
+  const messageEl = document.getElementById('customAlertMessage');
+  messageEl.textContent = message;
+  modal.classList.remove('hidden');
+}
+
+function closeCustomAlert() {
+  const modal = document.getElementById('customAlertModal');
+  modal.classList.add('hidden');
+}
 </script>
 
 

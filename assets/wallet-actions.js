@@ -4,7 +4,7 @@ async function withdrawVoucher(amount) {
   console.log('withdrawVoucher function triggered with amount:', amount);
   const token = await getAuthToken();
   if (!token) {
-    alert('You must be logged in to withdraw funds.');
+    showCustomAlert('You must be logged in to withdraw funds.');
     return;
   }
   try {
@@ -17,15 +17,15 @@ async function withdrawVoucher(amount) {
     console.log('API response for withdraw:', data);
 
     if (!res.ok) {
-      alert(data.message || 'Failed to withdraw funds');
+      showCustomAlert(data.message || 'Failed to withdraw funds');
       return;
     }
 
-    alert(`Withdrawal successful! Voucher ID: ${data.voucherId}`);
+    showCustomAlert(`Withdrawal successful! Voucher ID: ${data.voucherId}`);
     await loadWallet();
   } catch (err) {
     console.error('Error in withdrawVoucher function:', err);
-    alert('Server error');
+    showCustomAlert('Server error');
   }
 }
 
@@ -42,7 +42,7 @@ async function depositVoucher(voucherId) {
   console.log('depositVoucher function triggered with voucherId:', voucherId);
   const token = await getAuthToken();
   if (!token) {
-    alert('You must be logged in to deposit funds.');
+    showCustomAlert('You must be logged in to deposit funds.');
     return;
   }
   try {
@@ -55,15 +55,15 @@ async function depositVoucher(voucherId) {
     console.log('API response for deposit:', data);
 
     if (!res.ok) {
-      alert(data.message || 'Failed to deposit funds');
+      showCustomAlert(data.message || 'Failed to deposit funds');
       return;
     }
 
-    alert(`Deposit successful! Amount: ${data.amount}`);
+    showCustomAlert(`Deposit successful! Amount: ${data.amount}`);
     await loadWallet();
   } catch (err) {
     console.error('Error in depositVoucher function:', err);
-    alert('Server error');
+    showCustomAlert('Server error');
   }
 }
 
