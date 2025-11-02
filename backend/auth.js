@@ -178,4 +178,72 @@ router.get('/wallet/transactions', async (req, res) => {
   }
 });
 
+// Deposit Funds Using Voucher
+router.post('/wallet/deposit', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+  const { voucherId } = req.body;
+  if (!voucherId) return res.status(400).json({ message: 'Missing voucher ID' });
+  try {
+    const [voucher] = await pool.query('SELECT * FROM vouchers WHERE voucher_id = ? AND status = ?', [voucherId, 'active']);
+    if (voucher.length === 0) return res.status(404).json({ message: 'Voucher not found or already redeemed' });
+    const voucherData = voucher[0];
+
+    await pool.query('UPDATE users SET wms_balance = wms_balance + ? WHERE id = ?', [voucherData.amount, decoded.id]);
+    await pool.query('UPDATE vouchers SET status = ? WHERE voucher_id = ?', ['redeemed', voucherId]);
+    await pool.query(
+      'INSERT INTO transactions (user_id, verb, wms_id, amount) VALUES (?, ?, ?, ?)',
+      [decoded.id, 'deposit', voucherId, voucherData.amount]
+    );
+
+    return res.status(200).json({ message: 'Deposit successful', amount: voucherData.amount });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Withdraw Funds by Issuing Voucher
+router.post('/wallet/withdraw', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+  const { amount } = req.body;
+  if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+  try {
+    const [user] = await pool.query('SELECT wms_balance FROM users WHERE id = ?', [decoded.id]);
+    if (user.length === 0) return res.status(404).json({ message: 'User not found' });
+    const userData = user[0];
+    if (userData.wms_balance < amount) return res.status(400).json({ message: 'Insufficient balance' });
+
+    const voucherId = `V-${Date.now()}`;
+    await pool.query('UPDATE users SET wms_balance = wms_balance - ? WHERE id = ?', [amount, decoded.id]);
+    await pool.query(
+      'INSERT INTO vouchers (voucher_id, user_id, amount, status) VALUES (?, ?, ?, ?)',
+      [voucherId, decoded.id, amount, 'active']
+    );
+    await pool.query(
+      'INSERT INTO transactions (user_id, verb, wms_id, amount) VALUES (?, ?, ?, ?)',
+      [decoded.id, 'withdraw', voucherId, amount]
+    );
+
+    return res.status(200).json({ message: 'Withdrawal successful', voucherId });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Fetch Vouchers
+router.get('/wallet/vouchers', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+  try {
+    const [vouchers] = await pool.query('SELECT voucher_id, amount, status FROM vouchers WHERE user_id = ?', [decoded.id]);
+    return res.json({ vouchers });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;

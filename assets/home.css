@@ -183,3 +183,31 @@ body {
 #transactionTable tr:hover {
   background-color: #333;
 }
+
+#vouchersTable {
+  margin: 20px auto;
+  width: 90%;
+  border-collapse: collapse;
+  font-size: 16px;
+  text-align: left;
+}
+
+#vouchersTable th, #vouchersTable td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+#vouchersTable th {
+  background-color: #4caf50;
+  color: #fff;
+  font-weight: bold;
+}
+
+#vouchersTable tr {
+  background-color: #222;
+  color: #fff;
+}
+
+#vouchersTable tr:hover {
+  background-color: #333;
+}

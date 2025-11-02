@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="assets/navbar.css">
   <link rel="stylesheet" href="assets/wallet.css">
   <link rel="stylesheet" href="assets/home.css">
-  
   <script src="assets/scripts.js" defer></script>
 </head>
 <body>
@@ -28,15 +27,15 @@
   </div>
   <div class="wallet-right">
     <div class="wallet-col left">
-      <div class="wallet-circle">Deposit<br>Funds</div>
+      <div class="wallet-circle" onclick="openModal('depositVoucherModal')">Deposit<br>Funds</div>
       <div class="wallet-circle" onclick="openModal('transactionHistoryModal')">History</div>
     </div>
     <div class="wallet-col middle">
       <div class="wallet-circle c2" onclick="openModal('sendMoneyModal')">Send<br>Money</div>
     </div>
     <div class="wallet-col right">
-      <div class="wallet-circle">Withdraw</div>
-      <div class="wallet-circle">Analytics</div>
+      <div class="wallet-circle" onclick="openModal('withdrawVoucherModal')">Withdraw</div>
+      <div class="wallet-circle" onclick="openModal('vouchersModal')">Vouchers</div>
     </div>
   </div>
 </main>
@@ -92,6 +91,44 @@
   <button type="button" onclick="closeModal('transactionHistoryModal')">Close</button>
 </div>
 
+<!-- VOUCHERS MODAL -->
+<div id="vouchersModal" class="modal hidden">
+  <table id="vouchersTable">
+    <thead>
+      <tr>
+        <th>Voucher ID</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button type="button" onclick="closeModal('vouchersModal')">Close</button>
+</div>
+
+<!-- DEPOSIT USING VOUCHER MODAL -->
+<div id="depositVoucherModal" class="modal hidden">
+  <form id="depositVoucherForm">
+    <h2>Deposit Using Voucher</h2>
+    <input type="text" name="voucherId" placeholder="Voucher ID" required />
+    <button type="submit">Deposit</button>
+    <button type="button" onclick="closeModal('depositVoucherModal')">Cancel</button>
+    <div id="depositVoucherError" class="error-msg"></div>
+  </form>
+</div>
+
+<!-- WITHDRAW USING VOUCHER MODAL -->
+<div id="withdrawVoucherModal" class="modal hidden">
+  <form id="withdrawVoucherForm">
+    <h2>Withdraw Using Voucher</h2>
+    <input type="number" name="amount" placeholder="Amount" required />
+    <button type="submit">Withdraw</button>
+    <button type="button" onclick="closeModal('withdrawVoucherModal')">Cancel</button>
+    <div id="withdrawVoucherError" class="error-msg"></div>
+  </form>
+</div>
+
+
 <script>
 function parseJwt (token) {
   try {
@@ -107,7 +144,7 @@ async function loadWallet() {
   const balanceEl = document.getElementById('walletBalance');
   const token = await getAuthToken();
   if (!token) {
-    balanceEl.innerHTML = `Please login to create or view wallet <button onclick=\"openModal('loginModal')\">Login</button>`;
+    balanceEl.innerHTML = `Please login to create or view wallet`;
     return;
   }
   try {
@@ -239,13 +276,154 @@ async function loadTransactionHistory() {
   }
 }
 
+// Adding detailed logs and ensuring proper handling of the API response in loadVouchers
+async function loadVouchers() {
+  const token = await getAuthToken();
+  try {
+    const res = await fetch('http://localhost:4000/api/auth/wallet/vouchers', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('API returned an error:', data.message || res.statusText);
+      return;
+    }
+
+    // Ensure the data structure is as expected
+    if (!data.vouchers || !Array.isArray(data.vouchers)) {
+      console.error('Unexpected data format:', data);
+      return;
+    }
+
+    // Target the renamed vouchers table body
+    const tbody = document.querySelector('#vouchersTable tbody');
+    if (!tbody) {
+      console.error('Vouchers table body not found');
+      return;
+    }
+
+    tbody.innerHTML = '';
+    data.vouchers.forEach(voucher => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${voucher.voucher_id}</td>
+        <td>${voucher.amount}</td>
+        <td>${voucher.status}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    openModal('vouchersModal');
+  } catch (err) {
+    console.error('Error in loadVouchers function:', err);
+    alert('Server error');
+  }
+}
+
 // Ensure the modal opens and triggers the API call
 const transactionHistoryButton = document.querySelector('.wallet-btn[onclick="openModal(\'transactionHistoryModal\')"]');
 if (transactionHistoryButton) {
   transactionHistoryButton.addEventListener('click', loadTransactionHistory);
 }
 
+const transactionCircle = document.querySelector('.wallet-circle[onclick="openModal(\'transactionHistoryModal\')"]');
+if (transactionCircle) {
+  transactionCircle.addEventListener('click', (e) => {
+    loadTransactionHistory();
+  });
+}
+
+// Update the `onclick` attribute of the wallet-circle div for vouchers
+const voucherCircle = document.querySelector('.wallet-circle[onclick="openModal(\'vouchersModal\')"]');
+if (voucherCircle) {
+  voucherCircle.addEventListener('click', (e) => {
+    loadVouchers();
+  });
+}
+
+// Deposit Voucher Handler
+const depositVoucherForm = document.getElementById('depositVoucherForm');
+depositVoucherForm.onsubmit = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const voucherId = form.voucherId.value.trim();
+  await depositVoucher(voucherId);
+  closeModal('depositVoucherModal');
+};
+
+// Define the withdrawVoucher function to handle withdrawals
+async function withdrawVoucher(amount) {
+  console.log('withdrawVoucher function triggered with amount:', amount);
+  const token = await getAuthToken();
+  if (!token) {
+    alert('You must be logged in to withdraw funds.');
+    return;
+  }
+  try {
+    const res = await fetch('http://localhost:4000/api/auth/wallet/withdraw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ amount })
+    });
+    const data = await res.json();
+    console.log('API response for withdraw:', data);
+
+    if (!res.ok) {
+      alert(data.message || 'Failed to withdraw funds');
+      return;
+    }
+
+    alert(`Withdrawal successful! Voucher ID: ${data.voucherId}`);
+    await loadWallet();
+  } catch (err) {
+    console.error('Error in withdrawVoucher function:', err);
+    alert('Server error');
+  }
+}
+
+// Withdraw Voucher Handler
+const withdrawVoucherForm = document.getElementById('withdrawVoucherForm');
+withdrawVoucherForm.onsubmit = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const amount = parseInt(form.amount.value.trim(), 10);
+  await withdrawVoucher(amount);
+  closeModal('withdrawVoucherModal');
+};
+
+// Define the depositVoucher function to handle deposits
+async function depositVoucher(voucherId) {
+  console.log('depositVoucher function triggered with voucherId:', voucherId);
+  const token = await getAuthToken();
+  if (!token) {
+    alert('You must be logged in to deposit funds.');
+    return;
+  }
+  try {
+    const res = await fetch('http://localhost:4000/api/auth/wallet/deposit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ voucherId })
+    });
+    const data = await res.json();
+    console.log('API response for deposit:', data);
+
+    if (!res.ok) {
+      alert(data.message || 'Failed to deposit funds');
+      return;
+    }
+
+    alert(`Deposit successful! Amount: ${data.amount}`);
+    await loadWallet();
+  } catch (err) {
+    console.error('Error in depositVoucher function:', err);
+    alert('Server error');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', loadWallet);
+
 </script>
 
 </body>
