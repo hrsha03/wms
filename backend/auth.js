@@ -6,6 +6,18 @@ import pool from './db.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
+// Helper to verify token and return decoded payload
+function verifyTokenFromHeader(req) {
+  const auth = req.headers.authorization;
+  if (!auth) return null;
+  const token = auth.split(' ')[1];
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (err) {
+    return null;
+  }
+}
+
 // Signup
 router.post('/signup', async (req, res) => {
   const { name, email, username, password } = req.body;
@@ -75,4 +87,52 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// GET wallet info for current user
+router.get('/wallet', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+  try {
+    const [rows] = await pool.query('SELECT wms_id, wms_balance FROM users WHERE id = ?', [decoded.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    const user = rows[0];
+    if (!user.wms_id) return res.json({ hasWallet: false });
+    return res.json({ hasWallet: true, wms_id: user.wms_id, balance: user.wms_balance });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST create wallet for current user
+router.post('/wallet', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+  const { walletId, pin } = req.body;
+  if (!walletId || !pin) return res.status(400).json({ message: 'Missing walletId or pin' });
+  if (!/^\d{4}$/.test(pin)) return res.status(400).json({ message: 'PIN must be 4 digits' });
+  try {
+    // Check if user already has a wallet
+    const [existing] = await pool.query('SELECT wms_id FROM users WHERE id = ?', [decoded.id]);
+    if (existing.length === 0) return res.status(404).json({ message: 'User not found' });
+    if (existing[0].wms_id) return res.status(409).json({ message: 'Wallet already exists' });
+    const hashedPin = await bcrypt.hash(pin, 10);
+    const initialBalance = 500;
+    await pool.query('UPDATE users SET wms_id = ?, wms_pin = ?, wms_balance = ? WHERE id = ?', [walletId, hashedPin, initialBalance, decoded.id]);
+    return res.status(201).json({ message: 'Wallet created', wms_id: walletId, balance: initialBalance });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;
+
+/**
+ * SQL to add wallet columns to `users` table (run in phpMyAdmin or MySQL):
+ *
+ * ALTER TABLE users
+ *   ADD COLUMN wms_id VARCHAR(100) DEFAULT NULL,
+ *   ADD COLUMN wms_pin VARCHAR(255) DEFAULT NULL,
+ *   ADD COLUMN wms_balance INT NOT NULL DEFAULT 0;
+ *
+ * Note: wms_pin is stored hashed (bcrypt). wms_balance defaults to 0; when a wallet is created it will be set to 500.
+ */
