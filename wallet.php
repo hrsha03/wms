@@ -24,9 +24,9 @@
     <p class="wallet-desc">Access all your wallet features and manage your digital funds securely.</p>
     <div class="wallet-balance" id="walletBalance">Balance: 500 Credits</div>
     <div class="wallet-actions">
-      <button class="wallet-btn">Add Funds</button>
+      <button class="wallet-btn" onclick="openModal('depositVoucherModal')">Add Funds</button>
       <button class="wallet-btn" onclick="openModal('sendMoneyModal')">Send Money</button>
-      <button class="wallet-btn">Withdraw</button>
+      <button class="wallet-btn" onclick="openModal('withdrawVoucherModal')">Withdraw</button>
       <button class="wallet-btn" onclick="openModal('transactionHistoryModal')">Transaction History</button>
     </div>
   </div>
