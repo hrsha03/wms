@@ -114,9 +114,8 @@ router.post('/wallet', async (req, res) => {
     const [existing] = await pool.query('SELECT wms_id FROM users WHERE id = ?', [decoded.id]);
     if (existing.length === 0) return res.status(404).json({ message: 'User not found' });
     if (existing[0].wms_id) return res.status(409).json({ message: 'Wallet already exists' });
-    const hashedPin = await bcrypt.hash(pin, 10);
     const initialBalance = 500;
-    await pool.query('UPDATE users SET wms_id = ?, wms_pin = ?, wms_balance = ? WHERE id = ?', [walletId, hashedPin, initialBalance, decoded.id]);
+    await pool.query('UPDATE users SET wms_id = ?, wms_pin = ?, wms_balance = ? WHERE id = ?', [walletId, pin, initialBalance, decoded.id]);
     return res.status(201).json({ message: 'Wallet created', wms_id: walletId, balance: initialBalance });
   } catch (err) {
     console.error(err);
@@ -124,15 +123,40 @@ router.post('/wallet', async (req, res) => {
   }
 });
 
-export default router;
+// Send Money API
+router.post('/wallet/send', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+  const { recipientId, amount, pin } = req.body;
+  if (!recipientId || !amount || !pin) return res.status(400).json({ message: 'Missing fields' });
+  try {
+    const [sender] = await pool.query('SELECT wms_id, wms_pin, wms_balance FROM users WHERE id = ?', [decoded.id]);
+    if (sender.length === 0) return res.status(404).json({ message: 'Sender not found' });
+    const senderData = sender[0];
+    
+    if (pin!=senderData.wms_pin) return res.status(401).json({ message: 'Invalid PIN' });
+    if (senderData.wms_balance < amount) return res.status(400).json({ message: 'Insufficient balance' });
 
-/**
- * SQL to add wallet columns to `users` table (run in phpMyAdmin or MySQL):
- *
- * ALTER TABLE users
- *   ADD COLUMN wms_id VARCHAR(100) DEFAULT NULL,
- *   ADD COLUMN wms_pin VARCHAR(255) DEFAULT NULL,
- *   ADD COLUMN wms_balance INT NOT NULL DEFAULT 0;
- *
- * Note: wms_pin is stored hashed (bcrypt). wms_balance defaults to 0; when a wallet is created it will be set to 500.
- */
+    const [recipient] = await pool.query('SELECT id FROM users WHERE wms_id = ?', [recipientId]);
+    if (recipient.length === 0) return res.status(404).json({ message: 'Recipient not found' });
+    const recipientIdDb = recipient[0].id;
+
+    await pool.query('UPDATE users SET wms_balance = wms_balance - ? WHERE id = ?', [amount, decoded.id]);
+    await pool.query('UPDATE users SET wms_balance = wms_balance + ? WHERE id = ?', [amount, recipientIdDb]);
+    await pool.query(
+      'INSERT INTO transactions (user_id, verb, wms_id, amount) VALUES (?, ?, ?, ?)',
+      [decoded.id, 'debit', recipientId, amount]
+    );
+    await pool.query(
+      'INSERT INTO transactions (user_id, verb, wms_id, amount) VALUES (?, ?, ?, ?)',
+      [recipientIdDb, 'credit', senderData.wms_id, amount]
+    );
+
+    return res.status(200).json({ message: 'Transaction successful' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+export default router;

@@ -21,9 +21,9 @@
     <div class="wallet-balance" id="walletBalance">Balance: 2,500 Credits</div>
     <div class="wallet-actions">
       <button class="wallet-btn">Add Funds</button>
-      <button class="wallet-btn">Send Money</button>
+      <button class="wallet-btn" onclick="openModal('sendMoneyModal')">Send Money</button>
       <button class="wallet-btn">Withdraw</button>
-      <button class="wallet-btn">Transaction History</button>
+      <button class="wallet-btn" onclick="openModal('transactionHistoryModal')">Transaction History</button>
     </div>
   </div>
   <div class="wallet-right">
@@ -51,6 +51,46 @@
     <button type="button" onclick="closeModal('createWalletModal')">Cancel</button>
     <div id="createWalletError" class="error-msg"></div>
   </form>
+</div>
+
+<!-- SEND MONEY MODAL -->
+<div id="sendMoneyModal" class="modal hidden">
+  <form id="sendMoneyForm">
+    <h2>Send Money</h2>
+    <input type="text" name="recipientId" placeholder="Recipient's Wallet ID" required />
+    <input type="number" name="amount" placeholder="Amount" required />
+    <button type="submit">Next</button>
+    <button type="button" onclick="closeModal('sendMoneyModal')">Cancel</button>
+    <div id="sendMoneyError" class="error-msg"></div>
+  </form>
+</div>
+
+<!-- VERIFY PIN MODAL -->
+<div id="verifyPinModal" class="modal hidden">
+  <form id="verifyPinForm">
+    <h2>Verify PIN</h2>
+    <input type="password" name="pin" placeholder="4-digit PIN" pattern="\d{4}" required />
+    <button type="submit">Send</button>
+    <button type="button" onclick="closeModal('verifyPinModal')">Cancel</button>
+    <div id="verifyPinError" class="error-msg"></div>
+  </form>
+</div>
+
+<!-- TRANSACTION HISTORY MODAL -->
+<div id="transactionHistoryModal" class="modal hidden">
+  <h2>Transaction History</h2>
+  <table id="transactionTable">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Wallet ID</th>
+        <th>Amount</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button type="button" onclick="closeModal('transactionHistoryModal')">Close</button>
 </div>
 
 <script>
@@ -134,6 +174,71 @@ document.getElementById('createWalletForm').onsubmit = async function(e) {
     document.getElementById('createWalletError').textContent = 'Server error';
   }
 };
+
+// Send Money Handler
+let sendMoneyDetails = {};
+document.getElementById('sendMoneyForm').onsubmit = function(e) {
+  e.preventDefault();
+  const form = e.target;
+  sendMoneyDetails.recipientId = form.recipientId.value.trim();
+  sendMoneyDetails.amount = parseInt(form.amount.value.trim(), 10);
+  closeModal('sendMoneyModal');
+  openModal('verifyPinModal');
+};
+
+document.getElementById('verifyPinForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const pin = form.pin.value.trim();
+  try {
+    const token = await getAuthToken();
+    const res = await fetch('http://localhost:4000/api/auth/wallet/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ ...sendMoneyDetails, pin })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById('verifyPinError').textContent = data.message || 'Transaction failed';
+      return;
+    }
+    closeModal('verifyPinModal');
+    alert('Transaction successful!');
+    await loadWallet();
+  } catch (err) {
+    document.getElementById('verifyPinError').textContent = 'Server error';
+  }
+};
+
+// Load Transaction History
+async function loadTransactionHistory() {
+  const token = await getAuthToken();
+  try {
+    const res = await fetch('http://localhost:4000/api/auth/wallet/transactions', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.message || 'Failed to load transactions');
+      return;
+    }
+    const tbody = document.querySelector('#transactionTable tbody');
+    tbody.innerHTML = '';
+    data.transactions.forEach(tranx => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${tranx.verb}</td>
+        <td>${tranx.wms_id}</td>
+        <td>${tranx.amount}</td>
+        <td>${new Date(tranx.timestamp).toLocaleString()}</td>
+      `;
+      tbody.appendChild(row);
+    });
+    openModal('transactionHistoryModal');
+  } catch (err) {
+    alert('Server error');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', loadWallet);
 </script>
