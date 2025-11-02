@@ -21,7 +21,7 @@
 <main class="wallet-main">
   <div class="wallet-left">
     <p class="wallet-title">My "wms"</p>
-    <p class="wallet-desc">Access all your wallet features and manage your digital funds securely.</p>
+    <p class="wallet-desc">You can now deposit and withdraw using vouchers. Try now!</p>
     <div class="wallet-balance" id="walletBalance">Balance: 500 Credits</div>
     <div class="wallet-actions">
       <button class="wallet-btn" onclick="openModal('depositVoucherModal')">Add Funds</button>

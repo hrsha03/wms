@@ -29,17 +29,70 @@
 	</div>
 			<div class="services-right">
 				<div class="service-col col-left">
-					<div class="service-circle">Check<br>Balance</div>
-					<div class="service-circle">Deposit<br>Funds</div>
-					<div class="service-circle">Daily<br>Bonus</div>
+					<div class="service-circle 1">Manage<br>credits</div>
+					<div class="service-circle 2">Deposit<br>funds</div>
+					<div class="service-circle 3">Daily<br>bonus</div>
 				</div>
 				<div class="service-col col-right">
-					<div class="service-circle">Send<br>Money</div>
-					<div class="service-circle">Pay<br>Bills</div>
-					<div class="service-circle">Analytics</div>
+					<div class="service-circle 4">Make<br>payments</div>
+					<div class="service-circle 5">Get<br>vouchers</div>
+					<div class="service-circle 6">Analytics</div>
 				</div>
 			</div>
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeCustomAlert()">&times;</span>
+    <p id="customAlertMessage"></p>
+    <button class="modal-btn" onclick="closeCustomAlert()">OK</button>
+  </div>
+</div>
+<script>
+	
+// Custom Alert Modal
+function showCustomAlert(message) {
+  const modal = document.getElementById('customAlertModal');
+  const messageEl = document.getElementById('customAlertMessage');
+  if (!modal || !messageEl) {
+    console.error('Custom alert modal or message element not found.');
+    return;
+  }
+  messageEl.innerHTML = message;
+  modal.classList.remove('hidden');
+}
+
+function closeCustomAlert() {
+  const modal = document.getElementById('customAlertModal');
+  modal.classList.add('hidden');
+}
+
+// Updated setupFeatureDescriptions to use indexes for matching
+function setupFeatureDescriptions() {
+  const featureDescriptions = [
+    'Spend all you want, but spend only what you have in your wallet.<br>We help you develop better spending habits.',
+    'Balance running low. No worries, get a voucher and top up instantly.',
+    'The more you utilise our features, the more we reward you.\nEarn 1% of your balance as bonus, daily!',
+    'Before you blink, your transaction is successful. All you need is a wms wallet.',
+    'Withdraw credits as vouchers just like you withdraw cash. Only much, much faster',
+    'Get detailed analytics of your spending and savings.'
+
+  ];
+
+  document.querySelectorAll('.service-circle').forEach((circle, index) => {
+    circle.addEventListener('click', () => {
+      const description = featureDescriptions[index] || 'Feature description not available.';
+      showCustomAlert(description);
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', setupFeatureDescriptions);
+
+</script>
+
 </main>
+
+
 <?php include('auth.php'); ?>
 
 </body>
