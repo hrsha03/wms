@@ -118,6 +118,31 @@ body {
   cursor: pointer;
 }
 
+/* Refined Transaction Table Styling */
+#transactionTable {
+  margin: 20px auto;
+  width: 90%;
+  border-collapse: collapse;
+  font-size: 16px;
+  text-align: left;
+}
+
+#transactionTable th, #transactionTable td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+#transactionTable th {
+  background-color: #4caf50;
+  color: #fff;
+  font-weight: bold;
+}
+
+
+#transactionTable tr:hover {
+  background-color: #f1f1f1;
+}
+
 @media (max-width: 900px) {
   .wallet-main {
     flex-direction: column;

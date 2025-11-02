@@ -111,8 +111,14 @@ body {
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 50px;
   z-index: 9999;
+}
+
+.modal h2 {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .modal form {
@@ -121,8 +127,9 @@ body {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 300px;
+  gap: 20px;
+  width: 90%;
+  max-width: 600px;
 }
 
 .modal input {
@@ -132,8 +139,8 @@ body {
 }
 
 .modal button {
-  padding: 8px;
-  background-color: #444;
+  padding: 10px;
+  background-color: #4caf50;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -141,9 +148,38 @@ body {
 }
 
 .modal button:hover {
-  background-color: #666;
+  background-color: #81c784;
 }
 
 .hidden {
   display: none;
+}
+
+/* Updated Transaction Table Styling */
+#transactionTable {
+  margin: 20px auto;
+  width: 90%;
+  border-collapse: collapse;
+  font-size: 16px;
+  text-align: left;
+}
+
+#transactionTable th, #transactionTable td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+#transactionTable th {
+  background-color: #4caf50;
+  color: #fff;
+  font-weight: bold;
+}
+
+#transactionTable tr {
+  background-color: #222;
+  color: #fff;
+}
+
+#transactionTable tr:hover {
+  background-color: #333;
 }

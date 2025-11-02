@@ -159,4 +159,23 @@ router.post('/wallet/send', async (req, res) => {
   }
 });
 
+// Transaction History API
+router.get('/wallet/transactions', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) {
+    console.error('Token verification failed or missing token');
+    return res.status(401).json({ message: 'Invalid or missing token' });
+  }
+  try {
+    const [transactions] = await pool.query(
+      'SELECT verb, wms_id, amount, created_at AS timestamp FROM transactions WHERE user_id = ? ORDER BY created_at DESC',
+      [decoded.id]
+    );
+    return res.json({ transactions });
+  } catch (err) {
+    console.error('Error fetching transactions:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;

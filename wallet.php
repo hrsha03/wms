@@ -29,10 +29,10 @@
   <div class="wallet-right">
     <div class="wallet-col left">
       <div class="wallet-circle">Deposit<br>Funds</div>
-      <div class="wallet-circle">History</div>
+      <div class="wallet-circle" onclick="openModal('transactionHistoryModal')">History</div>
     </div>
     <div class="wallet-col middle">
-      <div class="wallet-circle c2">Send<br>Money</div>
+      <div class="wallet-circle c2" onclick="openModal('sendMoneyModal')">Send<br>Money</div>
     </div>
     <div class="wallet-col right">
       <div class="wallet-circle">Withdraw</div>
@@ -78,7 +78,6 @@
 
 <!-- TRANSACTION HISTORY MODAL -->
 <div id="transactionHistoryModal" class="modal hidden">
-  <h2>Transaction History</h2>
   <table id="transactionTable">
     <thead>
       <tr>
@@ -238,6 +237,12 @@ async function loadTransactionHistory() {
   } catch (err) {
     alert('Server error');
   }
+}
+
+// Ensure the modal opens and triggers the API call
+const transactionHistoryButton = document.querySelector('.wallet-btn[onclick="openModal(\'transactionHistoryModal\')"]');
+if (transactionHistoryButton) {
+  transactionHistoryButton.addEventListener('click', loadTransactionHistory);
 }
 
 document.addEventListener('DOMContentLoaded', loadWallet);
