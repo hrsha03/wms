@@ -246,4 +246,61 @@ router.get('/wallet/vouchers', async (req, res) => {
   }
 });
 
+// Update Profile
+router.put('/update-profile', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+
+  const { name, email } = req.body;
+  if (!name && !email) return res.status(400).json({ message: 'No fields to update' });
+
+  try {
+    const updates = [];
+    const values = [];
+
+    if (name) {
+      updates.push('name = ?');
+      values.push(name);
+    }
+    if (email) {
+      updates.push('email = ?');
+      values.push(email);
+    }
+
+    values.push(decoded.id);
+
+    await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
+    return res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Change Password
+router.put('/change-password', async (req, res) => {
+  const decoded = verifyTokenFromHeader(req);
+  if (!decoded) return res.status(401).json({ message: 'Invalid or missing token' });
+
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ message: 'Missing fields' });
+
+  try {
+    const [rows] = await pool.query('SELECT password FROM users WHERE id = ?', [decoded.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
+
+    const user = rows[0];
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) return res.status(401).json({ message: 'Current password is incorrect' });
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = ? WHERE id = ?', [hash, decoded.id]);
+
+    return res.status(200).json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;
