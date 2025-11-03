@@ -26,7 +26,7 @@ document.getElementById('verifyPinForm').onsubmit = async function(e) {
       return;
     }
     closeModal('verifyPinModal');
-    alert('Transaction successful!');
+    showCustomAlert('Transaction successful!');
     await loadWallet();
   } catch (err) {
     document.getElementById('verifyPinError').textContent = 'Server error';

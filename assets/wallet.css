@@ -69,6 +69,21 @@ body {
   border-color: #81c784;
 }
 
+.open-create-wallet-btn {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.open-create-wallet-btn:hover {
+  background-color: #81c784;
+}
+
 .wallet-right {
   flex: 1;
   display: flex;

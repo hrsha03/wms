@@ -91,7 +91,7 @@ function setupFeatureDescriptions() {
     'Before you blink, your transaction is successful.<br>All you need is a wms wallet.',
     'Credits in wms are like money in real life.<br>We have gamified the process so you can manage your real money better.',
     'Withdraw credits as vouchers just like you withdraw cash.<br>Only much, much faster',
-    'Balance running low. No worries, get a voucher and top up instantly.',
+    'Balance running low.<br> No worries, get a voucher and top up instantly.',
     'Get detailed analytics of your spending and savings.'
   ];
 

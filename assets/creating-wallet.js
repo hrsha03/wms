@@ -31,7 +31,7 @@ document.getElementById('createWalletForm').onsubmit = async function(e) {
     }
     closeModal('createWalletModal');
     await loadWallet();
-    alert('Wallet created! You received 500 Credits.');
+    showCustomAlert('Wallet created! You received 500 Credits.');
   } catch (err) {
     document.getElementById('createWalletError').textContent = 'Server error';
   }
