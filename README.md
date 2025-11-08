@@ -12,10 +12,15 @@ The Wallet Management System (WMS) is a web-based application designed to manage
 ### Wallet Management
 - Perform wallet actions such as sending money and managing vouchers.
 
+#### Secure transactions
+- Create a wallet and secure it using a PIN.
+- Use this PIN for split-second payments!
+
 #### Vouchers Management
 - Deposit and Withdrawals are implemented using vouchers.
 - Withdraw any amount in the form of a voucher that can be shared/redeemed.
 - Redeem a valid voucher, securely deposit into your wallet. 
+- Now you can view your vouchers' history as well.
 
 #### Transaction History
 - Fetch and display transaction history without needing to refresh everytime.
@@ -74,9 +79,6 @@ session/
 
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for review.
-
-## License
-This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Author
 - **hrsha03**
